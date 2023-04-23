@@ -20,6 +20,7 @@ module.exports = class BundleCreatorClass {
     /**
      * Cria o bundle a partir do nome passado pelo parâmetro
      * na linha de comando
+     * @returns {void}
      */
     createBundle() {
         this.checkIfExistsSourceDir();
@@ -33,6 +34,7 @@ module.exports = class BundleCreatorClass {
     /**
      * Verifica se o argumento foi fornecido na linha de comando.
      * @returns {String}
+     * @throws {Error}
      */
     checkIfArgumentExists() {
         this.argument = process.argv[2] ? process.argv[2] : undefined;
@@ -45,6 +47,7 @@ module.exports = class BundleCreatorClass {
     /**
      * Verifica se o diretório Source (ou src) existe no projeto.
      * @returns {void}
+     * @throws {Error}
      */
     checkIfExistsSourceDir() {
         if (!this.fs.existsSync(this.mainDir)) throw new Error("\x1b[31mNão foi possível encontrar o diretório raíz /src\x1b[0m");
@@ -54,6 +57,7 @@ module.exports = class BundleCreatorClass {
      * Retorna o nome do bundle. Caso o mesmo já exista, retorna erro
      * @param {String} arg
      * @returns {String}
+     * @throws {Error}
      */
     returnBundleName(arg) {
         this.pathDir = `${this.mainDir}/${arg}Bundle`;
@@ -80,7 +84,7 @@ module.exports = class BundleCreatorClass {
             this.fs.mkdirSync(`${bundle}/${directory}`);
             this.fs.writeFileSync(`${bundle}/${directory}/${argument}${directory}.js`, this.writeFileModel(argument, directory));
 
-            console.log(`\x1b[34mCriado: diretório '${directory}' e arquivo '${argument}${directory}.js'\x1b[0m`);
+            console.log(`\x1b[34mCriado subdiretório '${directory}' e arquivo '${argument}${directory}.js'\x1b[0m`);
         });
 
         this.exec(`chmod o+w ${bundle} -R`);
@@ -91,7 +95,7 @@ module.exports = class BundleCreatorClass {
     }
 
     /**
-     *
+     * Padrão de write file
      * @param {String} fileName
      * @param {String} fileType
      * @returns {String}
