@@ -20,6 +20,8 @@ module.exports = new class BundleCreatorClass {
         this.apisDir     = this.mainDir + "/Api";
         this.crawlersDir = this.mainDir + "/Crawlers";
         this.servicesDir = this.mainDir + "/Services";
+
+        // this.subdirApi   = ["Model"]
     }
 
     /**
@@ -85,6 +87,9 @@ module.exports = new class BundleCreatorClass {
 
         this.fs.writeFileSync(`${bundle}/${argument}RequestCrawler.js`, this.writeFileModel(argument));
         console.log(`\x1b[34mCriado arquivo '${argument}RequestCrawler.js'\x1b[0m\r\n`);
+
+        this.fs.writeFileSync(`${this.apisDir}/${argument}Api.js`, this.writeFileModel(argument, "Api"));
+        this.fs.writeFileSync(`${this.servicesDir}/${argument}Service.js`, this.writeFileModel(argument, "Service"));
 
         this.directoriesBundle.map(directory => {
             this.fs.mkdirSync(`${bundle}/${directory}`);
@@ -154,6 +159,14 @@ module.exports = new class BundleCreatorClass {
 
             case this.directoriesBundle[3]:
                 this.writeModel = `module.exports = class ${this.namePattern}Tests {};`;
+                break;
+
+            case "Api":
+                this.writeModel = `module.exports = class ${this.namePattern}Api {};`;
+                break;
+
+            case "Service":
+                this.writeModel = `module.exports = class ${this.namePattern}Service {};`;
                 break;
 
             default:
