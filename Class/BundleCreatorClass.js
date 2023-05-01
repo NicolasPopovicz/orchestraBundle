@@ -3,18 +3,23 @@
  * @author Nicolas Popovicz <nicolas.p@procob.com>
  * @version 1.0
  * @example
+ *
  * const BundleCreatorClass = require("./Class/BundleCreatorClass");
  *
- * (new BundleCreatorClass()).createBundle();
+ * BundleCreatorClass.createBundle();
  */
-module.exports = class BundleCreatorClass {
+module.exports = new class BundleCreatorClass {
     constructor() {
         this.fs   = require("fs");
         this.exec = require("child_process").exec;
         this.path = require("path");
 
         this.directoriesBundle = ["DOM", "Route", "Helper", "Tests", "Config", "Headers"];
-        this.mainDir = this.path.basename("./") + "/src";
+
+        this.mainDir     = this.path.basename("./") + "/src";
+        this.apisDir     = this.mainDir + "/Api";
+        this.crawlersDir = this.mainDir + "/Crawlers";
+        this.servicesDir = this.mainDir + "/Services";
     }
 
     /**
@@ -24,6 +29,7 @@ module.exports = class BundleCreatorClass {
      */
     createBundle() {
         this.checkIfExistsSourceDir();
+        this.createMainDirs();
 
         this.createFileSystemModel(
             this.returnBundleName(this.checkIfArgumentExists()),
@@ -60,7 +66,7 @@ module.exports = class BundleCreatorClass {
      * @throws {Error}
      */
     returnBundleName(arg) {
-        this.pathDir = `${this.mainDir}/${arg}Bundle`;
+        this.pathDir = `${this.crawlersDir}/${arg}Bundle`;
 
         if (this.fs.existsSync(this.pathDir)) throw new Error(`\x1b[31mO Bundle com o nome '${arg}' já existe!\x1b[0m`);
 
@@ -92,6 +98,35 @@ module.exports = class BundleCreatorClass {
         console.log("\r\n\x1b[33mPermissões do bundle alteradas!\x1b[0m\r\n");
 
         console.log("\x1b[32mBundle criado com sucesso! \x1b[0m\r\n");
+    }
+
+    /**
+     * Caso não existam, cria os diretórios Service, Controller e Api dentro de /src.
+     */
+    createMainDirs() {
+        if (!this.fs.existsSync(this.apisDir)) {
+            this.fs.mkdirSync(this.apisDir);
+            console.log(`\r\n\x1b[35mCriado diretório '${this.apisDir}'\x1b[0m`);
+
+            this.exec(`chmod o+w ${this.apisDir} -R`);
+            console.log(`\x1b[33mPermissões do diretório ${this.apisDir} alteradas!\x1b[0m\r\n`);
+        }
+
+        if (!this.fs.existsSync(this.crawlersDir)) {
+            this.fs.mkdirSync(this.crawlersDir);
+            console.log(`\x1b[35mCriado diretório '${this.crawlersDir}'\x1b[0m`);
+
+            this.exec(`chmod o+w ${this.crawlersDir} -R`);
+            console.log(`\x1b[33mPermissões do diretório ${this.crawlersDir} alteradas!\x1b[0m\r\n`);
+        }
+
+        if (!this.fs.existsSync(this.servicesDir)) {
+            this.fs.mkdirSync(this.servicesDir);
+            console.log(`\x1b[35mCriado diretório '${this.servicesDir}'\x1b[0m`);
+
+            this.exec(`chmod o+w ${this.servicesDir} -R`);
+            console.log(`\x1b[33mPermissões do diretório ${this.servicesDir} alteradas!\x1b[0m`);
+        }
     }
 
     /**
