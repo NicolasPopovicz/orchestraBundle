@@ -10,18 +10,18 @@
  */
 module.exports = new class BundleCreatorClass {
     constructor() {
-        this.fs   = require("fs");
+        this.fs = require("fs");
         this.exec = require("child_process").exec;
         this.path = require("path");
 
-        this.directoriesBundle = ["DOM", "Route", "Helper", "Tests", "Config", "Headers"];
+        this.directoriesBundle = ["DOM", "Routes", "Helper", "Tests", "Config", "Headers"];
 
-        this.mainDir     = this.path.basename("./") + "/src";
-        this.apisDir     = this.mainDir + "/Api";
+        this.mainDir = this.path.basename("./") + "/src";
+        this.apisDir = this.mainDir + "/Api";
         this.crawlersDir = this.mainDir + "/Crawlers";
         this.servicesDir = this.mainDir + "/Services";
 
-        // this.subdirApi   = ["Model"]
+        this.subdirApi = ["Controllers", "Routes"];
     }
 
     /**
@@ -30,12 +30,14 @@ module.exports = new class BundleCreatorClass {
      * @returns {void}
      */
     createBundle() {
+        let argument = this.checkIfArgumentExists();
+
         this.checkIfExistsSourceDir();
-        this.createMainDirs();
+        this.createMainDirs(argument);
 
         this.createFileSystemModel(
-            this.returnBundleName(this.checkIfArgumentExists()),
-            this.checkIfArgumentExists()
+            this.returnBundleName(argument),
+            argument
         );
     }
 
@@ -88,7 +90,6 @@ module.exports = new class BundleCreatorClass {
         this.fs.writeFileSync(`${bundle}/${argument}RequestCrawler.js`, this.writeFileModel(argument));
         console.log(`\x1b[34mCriado arquivo '${argument}RequestCrawler.js'\x1b[0m\r\n`);
 
-        this.fs.writeFileSync(`${this.apisDir}/${argument}Api.js`, this.writeFileModel(argument, "Api"));
         this.fs.writeFileSync(`${this.servicesDir}/${argument}Service.js`, this.writeFileModel(argument, "Service"));
 
         this.directoriesBundle.map(directory => {
@@ -107,14 +108,34 @@ module.exports = new class BundleCreatorClass {
 
     /**
      * Caso não existam, cria os diretórios Service, Controller e Api dentro de /src.
+     * @param {String} argument
      */
-    createMainDirs() {
+    createMainDirs(argument) {
         if (!this.fs.existsSync(this.apisDir)) {
             this.fs.mkdirSync(this.apisDir);
             console.log(`\r\n\x1b[35mCriado diretório '${this.apisDir}'\x1b[0m`);
 
             this.exec(`chmod o+w ${this.apisDir} -R`);
-            console.log(`\x1b[33mPermissões do diretório ${this.apisDir} alteradas!\x1b[0m\r\n`);
+        }
+
+        if (this.fs.existsSync(this.apisDir)) {
+            this.subdirApi.map(subDir => {
+                if (!this.fs.existsSync(`${this.apisDir}/${subDir}`)) {
+                    this.fs.mkdirSync(`${this.apisDir}/${subDir}`);
+                    console.log(`\x1b[34mCriado subdiretório '${this.apisDir}/${subDir}'\x1b[0m`);
+                }
+
+                if (subDir === this.subdirApi[1]) {
+                    this.fs.writeFileSync(`${this.apisDir}/${subDir}/${argument}RequestApi.js`, this.writeFileModel(argument, "RequestApi"));
+                    console.log(`\x1b[34mCriado arquivo '${this.apisDir}/${subDir}/${argument}RequestApi.js'\x1b[0m`);
+                } else {
+                    this.fs.writeFileSync(`${this.apisDir}/${subDir}/${argument}${subDir.slice(0, -1)}.js`, this.writeFileModel(argument, subDir));
+                    console.log(`\x1b[34mCriado arquivo '${this.apisDir}/${subDir}/${argument}${subDir}.js'\x1b[0m`);
+                }
+            })
+
+            this.exec(`chmod o+w ${this.apisDir} -R`);
+            console.log(`\r\n\x1b[33mPermissões do diretório ${this.apisDir} alteradas!\x1b[0m`);
         }
 
         if (!this.fs.existsSync(this.crawlersDir)) {
@@ -141,7 +162,7 @@ module.exports = new class BundleCreatorClass {
      * @returns {String}
      */
     writeFileModel(fileName, fileType) {
-        this.writeModel  = "";
+        this.writeModel = "";
         this.namePattern = `${fileName.charAt(0).toUpperCase() + fileName.slice(1)}`;
 
         if (fileType === this.directoriesBundle[0] || fileType === this.directoriesBundle[4] || fileType === this.directoriesBundle[5]) {
@@ -161,8 +182,12 @@ module.exports = new class BundleCreatorClass {
                 this.writeModel = `module.exports = class ${this.namePattern}Tests {};`;
                 break;
 
-            case "Api":
-                this.writeModel = `module.exports = class ${this.namePattern}Api {};`;
+            case "Controllers":
+                this.writeModel = `const ${this.namePattern}RequestCrawler = require('../../Crawlers/${this.namePattern}Bundle/${this.namePattern}RequestCrawler');\nconst abstractController = require("./abstractController");\n\nmodule.exports = new class ${this.namePattern}Controller extends abstractController {};`;
+                break;
+
+            case "RequestApi":
+                this.writeModel = `const ${this.namePattern}Controller = require("../Controllers/${fileName}Controller");\nconst abstractApi = require('./abstractApi');\nconst express = require('express');\nconst router = express.Router();`;
                 break;
 
             case "Service":
@@ -170,7 +195,7 @@ module.exports = new class BundleCreatorClass {
                 break;
 
             default:
-                this.writeModel = `module.exports = class ${this.namePattern}CrawlerRequest {};`
+                this.writeModel = `module.exports = class ${this.namePattern}RequestCrawler {};`
                 break;
         }
 
