@@ -1,25 +1,29 @@
 /**
  * @description Bundle Creator para auxiliar no desenvolvimento de ferramentas Crawler.
- * @author Nicolas Popovicz <nicolas.p@procob.com>
- * @version 1.0
+ * @author      Nicolas Popovicz <nicolas.p@procob.com>
+ * @version     1.0
  * @example
  *
  * const BundleCreatorClass = require("./Class/BundleCreatorClass");
  *
  * BundleCreatorClass.createBundle();
+ *
+ * Para utilizar o bundle da maneira correta pelo prompt, digite o seguinte trecho
+ *
+ * node index.js <nome-do-seu-bundle>
  */
 module.exports = new class BundleCreatorClass {
     constructor() {
-        this.fs = require("fs");
+        this.fs   = require("fs");
         this.exec = require("child_process").exec;
         this.path = require("path");
 
         this.directoriesBundle = ["DOM", "Routes", "Helper", "Tests", "Config", "Headers"];
 
-        this.mainDir = this.path.basename("./") + "/src";
-        this.apisDir = this.mainDir + "/Api";
-        this.crawlersDir = this.mainDir + "/Crawlers";
-        this.servicesDir = this.mainDir + "/Services";
+        this.mainDir     = `${this.path.basename("./")}/src`;
+        this.apisDir     = `${this.mainDir}/Api`;
+        this.crawlersDir = `${this.mainDir}/Crawlers`;
+        this.servicesDir = `${this.mainDir}/Services`;
 
         this.subdirApi = ["Controllers", "Routes"];
     }
@@ -44,7 +48,7 @@ module.exports = new class BundleCreatorClass {
     /**
      * Verifica se o argumento foi fornecido na linha de comando.
      * @returns {String}
-     * @throws {Error}
+     * @throws  {Error}
      */
     checkIfArgumentExists() {
         this.argument = process.argv[2] ? process.argv[2] : undefined;
@@ -57,7 +61,7 @@ module.exports = new class BundleCreatorClass {
     /**
      * Verifica se o diretório Source (ou src) existe no projeto.
      * @returns {void}
-     * @throws {Error}
+     * @throws  {Error}
      */
     checkIfExistsSourceDir() {
         if (!this.fs.existsSync(this.mainDir)) throw new Error("\x1b[31mNão foi possível encontrar o diretório raíz /src\x1b[0m");
@@ -65,9 +69,9 @@ module.exports = new class BundleCreatorClass {
 
     /**
      * Retorna o nome do bundle. Caso o mesmo já exista, retorna erro
-     * @param {String} arg
+     * @param   {String} arg
      * @returns {String}
-     * @throws {Error}
+     * @throws  {Error}
      */
     returnBundleName(arg) {
         this.pathDir = `${this.crawlersDir}/${arg}Bundle`;
@@ -79,8 +83,8 @@ module.exports = new class BundleCreatorClass {
 
     /**
      * Cria o padrão de dir + file do bundle
-     * @param {String} bundle
-     * @param {String} argument
+     * @param   {String} bundle
+     * @param   {String} argument
      * @returns {void}
      */
     createFileSystemModel(bundle, argument) {
@@ -157,15 +161,17 @@ module.exports = new class BundleCreatorClass {
 
     /**
      * Padrão de write file
-     * @param {String} fileName
-     * @param {String} fileType
+     * @param   {String} fileName
+     * @param   {String} fileType
      * @returns {String}
      */
     writeFileModel(fileName, fileType) {
-        this.writeModel = "";
+        this.writeModel  = "";
         this.namePattern = `${fileName.charAt(0).toUpperCase() + fileName.slice(1)}`;
 
-        if (fileType === this.directoriesBundle[0] || fileType === this.directoriesBundle[4] || fileType === this.directoriesBundle[5]) {
+        const listDirBundles = [this.directoriesBundle[0], this.directoriesBundle[4], this.directoriesBundle[5]];
+
+        if (listDirBundles.includes(fileType)) {
             return `module.exports = {};`;
         }
 
@@ -183,7 +189,7 @@ module.exports = new class BundleCreatorClass {
                 break;
 
             case "Controllers":
-                this.writeModel = `const ${this.namePattern}RequestCrawler = require('../../Crawlers/${this.namePattern}Bundle/${this.namePattern}RequestCrawler');\nconst abstractController = require("./abstractController");\n\nmodule.exports = new class ${this.namePattern}Controller extends abstractController {};`;
+                this.writeModel = `const ${this.namePattern}RequestCrawler = require('../../Crawlers/${fileName}Bundle/${fileName}RequestCrawler');\nconst abstractController = require("./abstractController");\n\nmodule.exports = new class ${this.namePattern}Controller extends abstractController {};`;
                 break;
 
             case "RequestApi":
